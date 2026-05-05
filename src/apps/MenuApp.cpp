@@ -35,6 +35,7 @@ UIMenuItemSpec kSetupMenu[] = {
   {"Set up WiFi"},
   {"Set up Time"},
   {"Sync with NTP"},
+  {"Force Reset"},
 };
 
 UIMenuItemSpec kSensorsMenu[] = {
@@ -185,6 +186,7 @@ void Watchy::launchMenuAction(uint8_t categoryIndex, uint8_t itemIndex) {
       if (itemIndex == 0) { setupWifi(); }
       else if (itemIndex == 1) { showSetTime(); }
       else if (itemIndex == 2) { showSyncNTP(); }
+      else if (itemIndex == 3) { showForceReset(); }
       break;
     case MenuCategory::Sensors:
       if (itemIndex == 0) { showBuzz(); }
