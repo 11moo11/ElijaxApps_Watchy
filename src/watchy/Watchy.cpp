@@ -252,6 +252,26 @@ void Watchy::deepSleep()
 void Watchy::handleButtonPress()
 {
   uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
+
+  // Check for force reset combo: BACK + UP held for 4 seconds
+  if ((wakeupBit & BACK_BTN_MASK) || (wakeupBit & UP_BTN_MASK)) {
+    if (digitalRead(BACK_BTN_PIN) == ACTIVE_LOW && digitalRead(UP_BTN_PIN) == ACTIVE_LOW) {
+      uint32_t start = millis();
+      bool comboHeld = true;
+      while (millis() - start < 4000) {
+        if (digitalRead(BACK_BTN_PIN) != ACTIVE_LOW || digitalRead(UP_BTN_PIN) != ACTIVE_LOW) {
+          comboHeld = false;
+          break;
+        }
+        delay(100);
+      }
+      if (comboHeld) {
+        vibMotor(100, 3); // Triple buzz for confirmation
+        esp_restart();
+      }
+    }
+  }
+
   // Menu Button
   if (wakeupBit & MENU_BTN_MASK)
   {

@@ -34,8 +34,8 @@ void Watchy::showForceReset() {
   // Draw the warning screen
   UiSDK::initScreen(display);
   Palette palette = {
-    BASE_POLARITY == WatchfacePolarity::WhiteOnBlack ? GxEPD_BLACK : GxEPD_WHITE,
-    BASE_POLARITY == WatchfacePolarity::WhiteOnBlack ? GxEPD_WHITE : GxEPD_BLACK,
+    static_cast<uint16_t>(BASE_POLARITY == WatchfacePolarity::WhiteOnBlack ? GxEPD_BLACK : GxEPD_WHITE),
+    static_cast<uint16_t>(BASE_POLARITY == WatchfacePolarity::WhiteOnBlack ? GxEPD_WHITE : GxEPD_BLACK),
   };
 
   display.setFont(&FreeMonoBold9pt7b);

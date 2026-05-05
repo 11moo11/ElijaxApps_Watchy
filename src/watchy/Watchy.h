@@ -1,22 +1,23 @@
 #ifndef WATCHY_H
 #define WATCHY_H
 
+#include <Arduino.h>
+#include <WiFiManager.h>
+#include <HTTPClient.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <Arduino_JSON.h>
+#include <Wire.h>
+#include <Fonts/FreeMonoBold9pt7b.h>
 #include "BLE.h"
-#include "DSEG7_Classic_Bold_53.h"
 #include "Display.h"
 #include "ThemeableDisplay.h"
-#include "TimezonesGMT.h"
 #include "bma.h"
 #include "config.h"
 #include "esp_chip_info.h"
-#include <Arduino.h>
-#include <Arduino_JSON.h>
-#include <Fonts/FreeMonoBold9pt7b.h>
-#include <HTTPClient.h>
-#include <NTPClient.h>
-#include <WiFiManager.h>
-#include <WiFiUdp.h>
-#include <Wire.h>
+#include "TimezonesGMT.h"
+#include "DSEG7_Classic_Bold_53.h"
+
 // Global theme: dark (black background) vs light (white background).
 // If DARKMODE is defined elsewhere (e.g. by a specific watchface), we
 // respect that value for the initial boot, but runtime theme is controlled
