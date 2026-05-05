@@ -116,7 +116,7 @@ uint8_t clampIndex(uint8_t idx, uint8_t len) {
 }
 
 void renderMenu(Watchy &watchy, byte menuIndex, uint8_t visibleRows) {
-  UiTemplates::waitForAllButtonsReleased();
+  // Removed waitForAllButtonsReleased() to allow faster scrolling and held-button repeats.
   const uint8_t itemCount = lengthFor(menuLevel, menuCategory);
   const UIMenuItemSpec *items = itemsFor(menuLevel, menuCategory);
   if (items == nullptr || itemCount == 0) {

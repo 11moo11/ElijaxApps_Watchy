@@ -272,68 +272,83 @@ void Watchy::handleButtonPress()
     }
   }
 
-  // Menu Button
-  if (wakeupBit & MENU_BTN_MASK)
-  {
-    if (guiState == WATCHFACE_STATE)
-    { // enter menu state if coming from watch face
-      returnToTopMenu();
-      //menuIndex = 0;
-      showMenu(menuIndex);
+  // Stay awake and handle buttons as long as we are in the menu and a button is held
+  bool firstPass = true;
+  while (firstPass || (guiState == MAIN_MENU_STATE &&
+                       (digitalRead(UP_BTN_PIN) == ACTIVE_LOW || digitalRead(DOWN_BTN_PIN) == ACTIVE_LOW))) {
+    
+    if (!firstPass) {
+      // Poll for button repeats
+      if (UiSDK::buttonPressed(UP_BTN_PIN))   wakeupBit |= UP_BTN_MASK;
+      if (UiSDK::buttonPressed(DOWN_BTN_PIN)) wakeupBit |= DOWN_BTN_MASK;
+      if (UiSDK::buttonPressed(MENU_BTN_PIN)) wakeupBit |= MENU_BTN_MASK;
+      if (UiSDK::buttonPressed(BACK_BTN_PIN)) wakeupBit |= BACK_BTN_MASK;
     }
-    else if (guiState == MAIN_MENU_STATE)
+
+    if (wakeupBit & MENU_BTN_MASK)
     {
-      if (!isInSubMenu()) {
-        enterSubMenu(menuIndex);
-        showMenu(menuIndex);
-      } else {
-        launchMenuAction(menuCategory, menuIndex);
-      }
-    }
-  }
-  // Back Button
-  else if (wakeupBit & BACK_BTN_MASK)
-  {
-    if (guiState == MAIN_MENU_STATE)
-    { // exit to watch face if already in menu
-      if (isInSubMenu()) {
+      if (guiState == WATCHFACE_STATE)
+      { // enter menu state if coming from watch face
         returnToTopMenu();
         showMenu(menuIndex);
-      } else {
-        RTC.read(currentTime);
-        showWatchFace(true);
+      }
+      else if (guiState == MAIN_MENU_STATE)
+      {
+        if (!isInSubMenu()) {
+          enterSubMenu(menuIndex);
+          showMenu(menuIndex);
+        } else {
+          launchMenuAction(menuCategory, menuIndex);
+        }
       }
     }
-    else if (guiState == APP_STATE || guiState == FW_UPDATE_STATE)
+    else if (wakeupBit & BACK_BTN_MASK)
     {
-      showMenu(menuIndex); // exit to menu if already in app
-    }
-  }
-  // Up Button
-  else if (wakeupBit & UP_BTN_MASK)
-  {
-    if (guiState == MAIN_MENU_STATE)
-    { // increment menu index
-      uint8_t len = activeMenuLength();
-      if (len > 0)
+      if (guiState == MAIN_MENU_STATE)
+      { // exit to watch face if already in menu
+        if (isInSubMenu()) {
+          returnToTopMenu();
+          showMenu(menuIndex);
+        } else {
+          RTC.read(currentTime);
+          showWatchFace(true);
+        }
+      }
+      else if (guiState == APP_STATE || guiState == FW_UPDATE_STATE)
       {
-        menuIndex = (menuIndex == 0) ? static_cast<int>(len - 1) : static_cast<int>(menuIndex - 1);
-        showMenu(menuIndex);
+        showMenu(menuIndex); // exit to menu if already in app
       }
     }
-  }
-  // Down Button
-  else if (wakeupBit & DOWN_BTN_MASK)
-  {
-    if (guiState == MAIN_MENU_STATE)
-    { // decrement menu index
-      uint8_t len = activeMenuLength();
-      if (len > 0)
-      {
-        menuIndex = (menuIndex + 1 >= len) ? 0 : static_cast<int>(menuIndex + 1);
-        showMenu(menuIndex);
+    else if (wakeupBit & UP_BTN_MASK)
+    {
+      if (guiState == MAIN_MENU_STATE)
+      { // increment menu index
+        uint8_t len = activeMenuLength();
+        if (len > 0)
+        {
+          menuIndex = (menuIndex == 0) ? static_cast<int>(len - 1) : static_cast<int>(menuIndex - 1);
+          showMenu(menuIndex);
+        }
       }
     }
+    else if (wakeupBit & DOWN_BTN_MASK)
+    {
+      if (guiState == MAIN_MENU_STATE)
+      { // decrement menu index
+        uint8_t len = activeMenuLength();
+        if (len > 0)
+        {
+          menuIndex = (menuIndex + 1 >= len) ? 0 : static_cast<int>(menuIndex + 1);
+          showMenu(menuIndex);
+        }
+      }
+    }
+
+    firstPass = false;
+    wakeupBit = 0;
+    delay(20);
+    yield();
+    if (guiState == WATCHFACE_STATE) break; // Exit loop if we went back to watchface
   }
 
   deepSleep();

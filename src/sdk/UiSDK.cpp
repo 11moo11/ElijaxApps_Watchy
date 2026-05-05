@@ -54,15 +54,17 @@ struct DebounceSlot {
   bool used;
   bool latched;
   uint32_t lastEventMs;
+  uint32_t holdStartMs;
+  bool repeatTriggered;
 };
 
 static DebounceSlot gDebounceSlots[16] = {
-    {0, false, false, 0}, {0, false, false, 0}, {0, false, false, 0},
-    {0, false, false, 0}, {0, false, false, 0}, {0, false, false, 0},
-    {0, false, false, 0}, {0, false, false, 0}, {0, false, false, 0},
-    {0, false, false, 0}, {0, false, false, 0}, {0, false, false, 0},
-    {0, false, false, 0}, {0, false, false, 0}, {0, false, false, 0},
-    {0, false, false, 0}};
+    {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false},
+    {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false},
+    {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false},
+    {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false},
+    {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false}, {0, false, false, 0, 0, false},
+    {0, false, false, 0, 0, false}};
 
 static DebounceSlot *acquireDebounceSlot(uint8_t pin) {
   DebounceSlot *freeSlot = nullptr;
@@ -79,6 +81,8 @@ static DebounceSlot *acquireDebounceSlot(uint8_t pin) {
     freeSlot->pin = pin;
     freeSlot->latched = false;
     freeSlot->lastEventMs = 0;
+    freeSlot->holdStartMs = 0;
+    freeSlot->repeatTriggered = false;
     return freeSlot;
   }
   return &gDebounceSlots[0];
@@ -355,13 +359,33 @@ bool UiSDK::buttonPressed(uint8_t pin, uint32_t debounceMs, bool activeLow) {
 
   if (!rawPressed) {
     slot->latched = false;
+    slot->holdStartMs = 0;
+    slot->repeatTriggered = false;
     return false;
   }
 
+  // Initial press
   if (!slot->latched && (nowMs - slot->lastEventMs >= debounceMs)) {
     slot->latched = true;
     slot->lastEventMs = nowMs;
+    slot->holdStartMs = nowMs;
+    slot->repeatTriggered = false;
     return true;
+  }
+
+  // Repeating hold logic
+  if (slot->latched && slot->holdStartMs != 0) {
+    const uint32_t holdTime = nowMs - slot->holdStartMs;
+    const uint32_t REPEAT_DELAY = 500; // 0.5s before repeat starts
+    const uint32_t REPEAT_RATE = 200;  // 5 items per second thereafter
+
+    if (holdTime >= REPEAT_DELAY) {
+        if (nowMs - slot->lastEventMs >= REPEAT_RATE) {
+            slot->lastEventMs = nowMs;
+            slot->repeatTriggered = true;
+            return true;
+        }
+    }
   }
 
   return false;
