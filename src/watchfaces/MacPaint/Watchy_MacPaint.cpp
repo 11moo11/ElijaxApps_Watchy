@@ -1,6 +1,6 @@
 #include "../../watchy/Watchy.h"
 #include "../../sdk/UiSDK.h"
-#include "MacPaint.h"
+#include "macpaint.h"
 
 static const unsigned char *numbers[10] = {numbers0, numbers1, numbers2, numbers3, numbers4, numbers5, numbers6, numbers7, numbers8, numbers9};
 

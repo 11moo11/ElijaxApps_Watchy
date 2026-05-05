@@ -225,6 +225,10 @@ class MyFirstWatchFace : public Watchy{ //inherit and extend Watchy class
 void shortSleep() { // like deep sleep but only sleep until the next second
   UiSDK::hibernate(display);
   RTC.clearAlarm();        // resets the alarm flag in the RTC
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  long int microsecToNextSec =  1000000 - tv.tv_usec;
+
   #ifdef ARDUINO_ESP32S3_DEV
   esp_sleep_enable_ext0_wakeup((gpio_num_t)USB_DET_PIN, USB_PLUGGED_IN ? LOW : HIGH); //// enable deep sleep wake on USB plug in/out
   rtc_gpio_set_direction((gpio_num_t)USB_DET_PIN, RTC_GPIO_MODE_INPUT_ONLY);
@@ -238,9 +242,6 @@ void shortSleep() { // like deep sleep but only sleep until the next second
 
   rtc_clk_32k_enable(true);
   //rtc_clk_slow_freq_set(RTC_SLOW_FREQ_32K_XTAL);
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  long int microsecToNextSec =  1000000 - tv.tv_usec;
 
   esp_sleep_enable_timer_wakeup(microsecToNextSec);
   #else
@@ -256,6 +257,8 @@ void shortSleep() { // like deep sleep but only sleep until the next second
   esp_sleep_enable_ext1_wakeup(
       BTN_PIN_MASK,
       ESP_EXT1_WAKEUP_ANY_HIGH); // enable deep sleep wake on button press
+  
+  esp_sleep_enable_timer_wakeup(microsecToNextSec);
   #endif
 
   if (microsecToNextSec > 0) {

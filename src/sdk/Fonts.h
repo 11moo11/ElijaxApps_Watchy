@@ -4,7 +4,7 @@
 
 #pragma once
 #include <Arduino.h>
-#include <GFXfont.h>
+#include <gfxfont.h>
 
 // Mono
 #include <Fonts/FreeMono9pt7b.h>

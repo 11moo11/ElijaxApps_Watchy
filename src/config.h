@@ -48,11 +48,10 @@
 #else //V1,V1.5,V2
 
 #if !defined(ARDUINO_WATCHY_V10) && !defined(ARDUINO_WATCHY_V15) && !defined(ARDUINO_WATCHY_V20)
-
-#pragma message "Please install the latest ESP32 Arduino Core (2.0.5+) and choose Watchy as the target board"
-#pragma message "Hardware revision is not defined at the project level, please define in config.h. Defaulting to ARDUINO_WATCHY_V20"
-
-#define ARDUINO_WATCHY_V20
+    #pragma message "Please install the latest ESP32 Arduino Core (2.0.5+) and choose Watchy as the target board"
+    #pragma message "Hardware revision is not defined at the project level, please define in config.h. Defaulting to ARDUINO_WATCHY_V20"
+    #define ARDUINO_WATCHY_V20
+#endif
 
 #define MENU_BTN_PIN 26
 #define BACK_BTN_PIN 25
@@ -88,8 +87,6 @@
 #define DOWN_BTN_MASK (BIT64(4))
 #define ACC_INT_MASK  (BIT64(14))
 #define BTN_PIN_MASK  MENU_BTN_MASK|BACK_BTN_MASK|UP_BTN_MASK|DOWN_BTN_MASK
-
-#endif
 
 #endif
 

@@ -1,6 +1,7 @@
 //Derived from peerdavid's source at: https://github.com/peerdavid/Watchy
 #include "Watchy_Base.h"
 #include "wifi999.h"
+#include "esp_sntp.h"
 
 RTC_DATA_ATTR weatherData pxl999_latestWeather;
 RTC_DATA_ATTR bool pxl999_twelve_mode = true;
