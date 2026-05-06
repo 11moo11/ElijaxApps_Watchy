@@ -19,6 +19,7 @@ RTC_DATA_ATTR bool BLE_CONFIGURED;
 RTC_DATA_ATTR weatherData currentWeather;
 RTC_DATA_ATTR int weatherIntervalCounter = -1;
 RTC_DATA_ATTR long gmtOffset = GMT_OFFSET_SEC;
+RTC_DATA_ATTR bool gUse24Hour = true;
 RTC_DATA_ATTR bool alreadyInMenu = true;
 RTC_DATA_ATTR bool USB_PLUGGED_IN = false;
 RTC_DATA_ATTR tmElements_t bootTime;
@@ -156,6 +157,7 @@ void Watchy::init(String datetime)
     break;
 #endif
   default: // reset
+    loadNVSConfig();
     RTC.config(datetime); // set RTC time if reset
     _bmaConfig();
     sensor.enableAccel(); // enable step counter on reset
@@ -623,18 +625,43 @@ void Watchy::_bmaConfig()
 void Watchy::_configModeCallback(WiFiManager *myWiFiManager)
 {
   display.setFullWindow();
-  display.clearScreen(UiSDK::getWatchfaceBg(BASE_POLARITY));
+  display.fillScreen(UiSDK::getWatchfaceBg(BASE_POLARITY));
   display.setFont(&FreeMonoBold9pt7b);
   display.setTextColor(UiSDK::getWatchfaceFg(BASE_POLARITY));
+  
   display.setCursor(0, 30);
-  display.println("Connect to");
-  display.print("SSID: ");
+  display.println("WIFI SETUP");
+  display.println("----------");
+  display.println("CONNECT TO:");
   display.println(WIFI_AP_SSID);
-  display.print("IP: ");
+  display.println("");
+  display.println("VISIT URL:");
+  display.print("http://");
   display.println(WiFi.softAPIP());
-  display.println("MAC address:");
-  display.println(WiFi.softAPmacAddress().c_str());
+  
   display.display(true); // partial refresh
 }
 
+int Watchy::getDisplayHour(int hour) {
+  if (gUse24Hour) {
+    return hour;
+  }
+  int h = ((hour + 11) % 12) + 1;
+  return h;
+}
 
+void Watchy::loadNVSConfig() {
+  Preferences prefs;
+  prefs.begin("watchy_cfg", false); // Read-only mode false, just in case, but begin usually doesn't care for read
+  gUse24Hour = prefs.getBool("use24Hour", true);
+  gmtOffset = prefs.getLong("gmtOffset", GMT_OFFSET_SEC);
+  prefs.end();
+}
+
+void Watchy::saveNVSConfig() {
+  Preferences prefs;
+  prefs.begin("watchy_cfg", false);
+  prefs.putBool("use24Hour", gUse24Hour);
+  prefs.putLong("gmtOffset", gmtOffset);
+  prefs.end();
+}

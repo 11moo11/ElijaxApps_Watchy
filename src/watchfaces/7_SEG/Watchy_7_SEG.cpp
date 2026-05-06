@@ -98,12 +98,7 @@ void showWatchFace_7SEG(Watchy &watchy) {
   const int16_t weatherConditionCode = currentWeather.weatherConditionCode;
 
   // --- Build dynamic strings ---
-  int displayHour;
-  if (HOUR_12_24 == 12) {
-    displayHour = ((watchy.currentTime.Hour + 11) % 12) + 1;
-  } else {
-    displayHour = watchy.currentTime.Hour;
-  }
+  int displayHour = watchy.getDisplayHour(watchy.currentTime.Hour);
 
   String timeStr;
   if (displayHour < 10) {

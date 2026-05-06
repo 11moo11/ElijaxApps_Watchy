@@ -457,6 +457,7 @@ void WatchyGSR::init(String datetime){
             if (OkNVS(GName)) B = NVS.getString(GTZ,S);
             OP.setCurrentPOSIX(S);
             RetrieveSettings();
+            Options.TwentyFour = gUse24Hour; // Sync with global setting
             WatchTime.ESPRTC |= (HWVer == 3.0f);
             if (OkNVS(GName)) {
                 S=""; B = NVS.getString(STP,S); if (S.toInt()) Steps.Cached = S.toInt();

@@ -1,76 +1,45 @@
-#include "../watchy/Watchy.h"
 #include "../sdk/UiSDK.h"
 #include "../sdk/UiTemplates.h"
+#include "../watchy/Watchy.h"
 
 enum class MenuCategory : uint8_t {
-  Time = 0,
-  Setup,
-  Sensors,
-  Network,
-  Online,
-  Astronomy,
-  StyleInfo,
+  Clock = 0,
+  Connectivity,
+  Display,
+  Tools,
+  System,
   Count
 };
 
 constexpr uint8_t kTopCount = static_cast<uint8_t>(MenuCategory::Count);
 
 UIMenuItemSpec kTopMenuItems[] = {
-  {"Time & Alarms"},
-  {"System Settings"},
-  {"Sensors"},
-  {"Network Tools"},
-  {"Apps"},
-  {"Astronomy"},
-  {"Preferences"},
+    {"Clock"}, {"WiFi"}, {"Display"}, {"Tools & Apps"}, {"System Settings"},
 };
 
-UIMenuItemSpec kTimeMenu[] = {
-  {"Alarm"},
-  {"Timer"},
-  {"Chronometer"},
+UIMenuItemSpec kClockMenu[] = {
+    {"Alarm"},        {"Timer"},         {"Chronometer"}, {"Set Time"},
+    {"Sun rise/set"}, {"Moon rise/set"}, {"Moon phase"},
+    {"Time Format"},  {"Set Timezone"},
 };
 
-UIMenuItemSpec kSetupMenu[] = {
-  {"Set up WiFi"},
-  {"Set up Time"},
-  {"Sync with NTP"},
-  {"Force Reset"},
+UIMenuItemSpec kConnectivityMenu[] = {
+    {"Set up WiFi"}, {"Sync with NTP"}, {"Ping"},      {"Traceroute"},
+    {"DNS Look-up"}, {"Whois"},         {"Port scan"}, {"HTTP client"},
 };
 
-UIMenuItemSpec kSensorsMenu[] = {
-  {"Vibrate Motor"},
-  {"Show Accelerometer"},
+UIMenuItemSpec kDisplayMenu[] = {
+    {"Watchfaces"},
+    {"Invert Colors"},
 };
 
-UIMenuItemSpec kNetworkMenu[] = {
-  {"Ping"},
-  {"Traceroute"},
-  {"DNS Look-up"},
-  {"Whois"},
-  {"Port scan"},
-  {"HTTP client"},
+UIMenuItemSpec kToolsMenu[] = {
+    {"Web Search"}, {"Text browser"}, {"News"}, {"Radio"}, {"Morse Game"},
 };
 
-UIMenuItemSpec kOnlineMenu[] = {
-  {"Web Search"},
-  {"Text browser"},
-  {"News"},
-  {"Radio"},
-  {"Morse Game"},
-};
-
-UIMenuItemSpec kAstronomyMenu[] = {
-  {"Sun rise/set"},
-  {"Moon rise/set"},
-  {"Moon phase"},
-};
-
-UIMenuItemSpec kStyleMenu[] = {
-  {"Watchfaces"},
-  {"Theme"},
-  {"Update FW"},
-  {"About Watchy"},
+UIMenuItemSpec kSystemMenu[] = {
+    {"Vibrate Motor"}, {"Show Accelerometer"}, {"Update FW"},
+    {"About Watchy"},  {"Force Reset"},
 };
 
 struct MenuGroup {
@@ -79,13 +48,16 @@ struct MenuGroup {
 };
 
 const MenuGroup kMenuGroups[] = {
-  {kTimeMenu, static_cast<uint8_t>(sizeof(kTimeMenu) / sizeof(kTimeMenu[0]))},
-  {kSetupMenu, static_cast<uint8_t>(sizeof(kSetupMenu) / sizeof(kSetupMenu[0]))},
-  {kSensorsMenu, static_cast<uint8_t>(sizeof(kSensorsMenu) / sizeof(kSensorsMenu[0]))},
-  {kNetworkMenu, static_cast<uint8_t>(sizeof(kNetworkMenu) / sizeof(kNetworkMenu[0]))},
-  {kOnlineMenu, static_cast<uint8_t>(sizeof(kOnlineMenu) / sizeof(kOnlineMenu[0]))},
-  {kAstronomyMenu, static_cast<uint8_t>(sizeof(kAstronomyMenu) / sizeof(kAstronomyMenu[0]))},
-  {kStyleMenu, static_cast<uint8_t>(sizeof(kStyleMenu) / sizeof(kStyleMenu[0]))},
+    {kClockMenu,
+     static_cast<uint8_t>(sizeof(kClockMenu) / sizeof(kClockMenu[0]))},
+    {kConnectivityMenu, static_cast<uint8_t>(sizeof(kConnectivityMenu) /
+                                             sizeof(kConnectivityMenu[0]))},
+    {kDisplayMenu,
+     static_cast<uint8_t>(sizeof(kDisplayMenu) / sizeof(kDisplayMenu[0]))},
+    {kToolsMenu,
+     static_cast<uint8_t>(sizeof(kToolsMenu) / sizeof(kToolsMenu[0]))},
+    {kSystemMenu,
+     static_cast<uint8_t>(sizeof(kSystemMenu) / sizeof(kSystemMenu[0]))},
 };
 
 const MenuGroup *groupFor(uint8_t category) {
@@ -116,7 +88,8 @@ uint8_t clampIndex(uint8_t idx, uint8_t len) {
 }
 
 void renderMenu(Watchy &watchy, byte menuIndex, uint8_t visibleRows) {
-  // Removed waitForAllButtonsReleased() to allow faster scrolling and held-button repeats.
+  // Removed waitForAllButtonsReleased() to allow faster scrolling and
+  // held-button repeats.
   const uint8_t itemCount = lengthFor(menuLevel, menuCategory);
   const UIMenuItemSpec *items = itemsFor(menuLevel, menuCategory);
   if (items == nullptr || itemCount == 0) {
@@ -127,34 +100,32 @@ void renderMenu(Watchy &watchy, byte menuIndex, uint8_t visibleRows) {
 
   UiSDK::initScreen(watchy.display);
   UIMenuSpec menuSpec{};
-  menuSpec.x             = 0;
-  menuSpec.y             = MENU_HEIGHT;
-  menuSpec.itemHeight    = MENU_HEIGHT;
-  menuSpec.font          = &FreeMonoBold9pt7b;
-  menuSpec.items         = items;
-  menuSpec.itemCount     = itemCount;
+  menuSpec.x = 0;
+  menuSpec.y = MENU_HEIGHT;
+  menuSpec.itemHeight = MENU_HEIGHT;
+  menuSpec.font = &FreeMonoBold9pt7b;
+  menuSpec.items = items;
+  menuSpec.itemCount = itemCount;
   menuSpec.selectedIndex = menuIndex;
-  menuSpec.visibleCount  = visibleRows;
-  menuSpec.startIndex    = UiTemplates::calcMenuStartIndex(menuIndex, visibleRows, itemCount);
+  menuSpec.visibleCount = visibleRows;
+  menuSpec.startIndex =
+      UiTemplates::calcMenuStartIndex(menuIndex, visibleRows, itemCount);
 
   UIAppSpec app{};
-  app.menus     = &menuSpec;
+  app.menus = &menuSpec;
   app.menuCount = 1;
 
   UiSDK::renderApp(watchy, app);
 
-  guiState      = MAIN_MENU_STATE;
+  guiState = MAIN_MENU_STATE;
   alreadyInMenu = true;
 }
-
 
 uint8_t Watchy::activeMenuLength() const {
   return lengthFor(menuLevel, menuCategory);
 }
 
-bool Watchy::isInSubMenu() const {
-  return menuLevel != 0;
-}
+bool Watchy::isInSubMenu() const { return menuLevel != 0; }
 
 void Watchy::enterSubMenu(uint8_t categoryIndex) {
   if (categoryIndex >= kTopCount) {
@@ -175,55 +146,89 @@ void Watchy::returnToTopMenu() {
 
 void Watchy::launchMenuAction(uint8_t categoryIndex, uint8_t itemIndex) {
   alreadyInMenu = false;
-  
+
   switch (static_cast<MenuCategory>(categoryIndex)) {
-    case MenuCategory::Time:
-      if (itemIndex == 0) { showAlarm(); }
-      else if (itemIndex == 1) { showTimer(); }
-      else if (itemIndex == 2) { showChronometer(); }
-      break;
-    case MenuCategory::Setup:
-      if (itemIndex == 0) { setupWifi(); }
-      else if (itemIndex == 1) { showSetTime(); }
-      else if (itemIndex == 2) { showSyncNTP(); }
-      else if (itemIndex == 3) { showForceReset(); }
-      break;
-    case MenuCategory::Sensors:
-      if (itemIndex == 0) { showBuzz(); }
-      else if (itemIndex == 1) { showAccelerometer(); }
-      break;
-    case MenuCategory::Network:
-      if (itemIndex == 0) { showPing(); }
-      else if (itemIndex == 1) { showTraceroute(); }
-      else if (itemIndex == 2) { showDig(); }
-      else if (itemIndex == 3) { showWhois(); }
-      else if (itemIndex == 4) { showPortScanner(); }
-      else if (itemIndex == 5) { showPostman(); }
-      break;
-    case MenuCategory::Online:
-      if (itemIndex == 0) { showGoogleSearch(); }
-      else if (itemIndex == 1) { showTextBrowserHome(); }
-      else if (itemIndex == 2) { showNewsReader(); }
-      else if (itemIndex == 3) { showRadio(); }
-      else if (itemIndex == 4) { showMorseGame(); }
-      break;
-    case MenuCategory::Astronomy:
-      if (itemIndex == 0) { showSunRise(); }
-      else if (itemIndex == 1) { showMoonRise(); }
-      else if (itemIndex == 2) { showMoonPhase(); }
-      break;
-    case MenuCategory::StyleInfo:
-      if (itemIndex == 0) { showWatchfaceSelector(); }
-      else if (itemIndex == 1) { showInvertColors(); }
-      else if (itemIndex == 2) { showUpdateFW(); }
-      else if (itemIndex == 3) { showAbout(); }
-      break;
-    default:
-      break;
+  case MenuCategory::Clock:
+    if (itemIndex == 0) {
+      showAlarm();
+    } else if (itemIndex == 1) {
+      showTimer();
+    } else if (itemIndex == 2) {
+      showChronometer();
+    } else if (itemIndex == 3) {
+      showSetTime();
+    } else if (itemIndex == 4) {
+      showSunRise();
+    } else if (itemIndex == 5) {
+      showMoonRise();
+    } else if (itemIndex == 6) {
+      showMoonPhase();
+    } else if (itemIndex == 7) {
+      showTimeFormatSetup();
+    } else if (itemIndex == 8) {
+      showTimezoneSetup();
+    }
+    break;
+  case MenuCategory::Connectivity:
+    if (itemIndex == 0) {
+      setupWifi();
+    } else if (itemIndex == 1) {
+      showSyncNTP();
+    }
+    break;
+  case MenuCategory::Display:
+    if (itemIndex == 0) {
+      showWatchfaceSelector();
+    } else if (itemIndex == 1) {
+      showInvertColors();
+    } else if (itemIndex == 2) {
+      showInvertColors();
+    } // Invert is basically "Theme" toggle in this firmware
+    break;
+  case MenuCategory::Tools:
+    if (itemIndex == 0) {
+      showGoogleSearch();
+    } else if (itemIndex == 1) {
+      showTextBrowserHome();
+    } else if (itemIndex == 2) {
+      showNewsReader();
+    } else if (itemIndex == 3) {
+      showRadio();
+    } else if (itemIndex == 4) {
+      showMorseGame();
+    } else if (itemIndex == 5) {
+      showPing();
+    } else if (itemIndex == 6) {
+      showTraceroute();
+    } else if (itemIndex == 7) {
+      showDig();
+    } else if (itemIndex == 8) {
+      showWhois();
+    } else if (itemIndex == 9) {
+      showPortScanner();
+    } else if (itemIndex == 10) {
+      showPostman();
+    }
+    break;
+  case MenuCategory::System:
+    if (itemIndex == 0) {
+      showBuzz();
+    } else if (itemIndex == 1) {
+      showAccelerometer();
+    } else if (itemIndex == 2) {
+      showUpdateFW();
+    } else if (itemIndex == 3) {
+      showAbout();
+    } else if (itemIndex == 4) {
+      showForceReset();
+    }
+    break;
+  default:
+    break;
   }
 }
 
-void Watchy::showMenu(byte menuIndex){
+void Watchy::showMenu(byte menuIndex) {
   const uint8_t visibleRows = 9; // shared layout
   renderMenu(*this, menuIndex, visibleRows);
 }

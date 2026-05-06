@@ -75,64 +75,43 @@ class SlackerWatchFace : public Watchy { //inherit and extend Watchy class
       
       //draw time
       UiSDK::setFont(display, &LiberationSansNarrow_Bold8pt7b);
-     if (currentTime.Hour > 0 && currentTime.Hour < 10) {
+      int displayHour = getDisplayHour(currentTime.Hour);
+      
+      if (displayHour < 10) {
         textstring += "0";
-      } else if(currentTime.Hour > 12 && currentTime.Hour <= 21){
-        textstring += "0";
-      } else {
-        textstring += "";
       }
-      if (currentTime.Hour > 0 && currentTime.Hour <= 12) {
-        textstring += currentTime.Hour;
-      } else if (currentTime.Hour < 1) {
-        textstring += 12;
-      } else {
-        textstring += ((currentTime.Hour+11)%12)+1;
-      }
+      textstring += displayHour;
 
       textstring += ":";
       if (currentTime.Minute < 10) {
         textstring += "0";
-      } else {
-        textstring += "";
       }
       textstring += currentTime.Minute;
 
-      //this section adds AM or PM to the display
-      if (currentTime.Hour >= 12) {
-        textstring += " PM EDT";//List of US Time Zones: EST, CST, MST, PST, AKST
-      } else {
-        textstring += " AM EDT";//List of US Daylight Savings Time Zones: EDT, CDT, MDT, PDT, AKDT
-	  }
-   //To change Time Zones, including Daylight Savings Time, see the settings.h section
+      // Adds AM/PM if in 12-hour mode
+      if (!gUse24Hour) {
+        textstring += (currentTime.Hour >= 12 ? " PM" : " AM");
+      }
+      textstring += " UTC"; // Centralized UTC label
 
       UiSDK::setCursor(display, 0, 102);
       UiSDK::print(display, textstring);
 
       //drawTimeBold
       UiSDK::setFont(display, &Teko_Regular20pt7b);
-      if (currentTime.Hour > 0 && currentTime.Hour <= 12) {
-        textstring = currentTime.Hour;
-      } else if (currentTime.Hour < 1) {
-        textstring = 12;
-      } else {
-        textstring = ((currentTime.Hour+11)%12)+1;
-      }
+      displayHour = getDisplayHour(currentTime.Hour);
+      textstring = String(displayHour);
 
       textstring += ":";
       if (currentTime.Minute < 10) {
         textstring += "0";
-      } else {
-        textstring += "";
       }
       textstring += currentTime.Minute;
 
-      //this section adds AM or PM to the display
-      if (currentTime.Hour >= 12) {
-        textstring += "PM";
-      } else {
-        textstring += "AM";
-    }
+      // Adds AM/PM if in 12-hour mode
+      if (!gUse24Hour) {
+        textstring += (currentTime.Hour >= 12 ? "PM" : "AM");
+      }
 
       UiSDK::setCursor(display, 107, 23);
       UiSDK::print(display, textstring);

@@ -138,7 +138,7 @@
 #define SET_MONTH  3
 #define SET_DAY    4
 #define SET_TZ     5
-#define HOUR_12_24 24
+#define HOUR_12_24 (gUse24Hour ? 24 : 12)
 
 // Compatibility define used by many upstream Watchy watchfaces.
 #ifndef YEAR_OFFSET

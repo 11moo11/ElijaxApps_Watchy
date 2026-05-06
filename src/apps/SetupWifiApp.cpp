@@ -25,13 +25,15 @@ void Watchy::setupWifi() {
 
   renderStatus(*this, "WiFi Setup", "Starting AP...");
   WiFiManager wifiManager;
-  const bool ok = wifiManager.autoConnect(lastSSID, lastPassword);
+  wifiManager.setAPCallback(_configModeCallback);
+  wifiManager.setTimeout(WIFI_AP_TIMEOUT);
 
-  if (!ok) {
-    wifiManager.resetSettings();
-    wifiManager.setAPCallback(_configModeCallback);
-    wifiManager.setTimeout(WIFI_AP_TIMEOUT);
-    wifiManager.startConfigPortal(WIFI_AP_SSID); // If we get here, the timeout expired while trying to connect to the AP, or // we failed to start the AP. In either case, show an error and return to // the menu. renderStatus(display, "WiFi Setup Failed", "Returning to menu..."); delay(2000); showMenu(menuIndex); return;
+  // Force the config portal since the user explicitly requested WiFi Setup
+  if (!wifiManager.startConfigPortal(WIFI_AP_SSID)) {
+    renderStatus(*this, "WiFi Setup Failed", "Returning to menu..."); 
+    delay(2000); 
+    showMenu(menuIndex); 
+    return;
   } else {
     char ipBuf[32];
     snprintf(ipBuf, sizeof(ipBuf), "%s", WiFi.localIP().toString().c_str());
@@ -40,8 +42,8 @@ void Watchy::setupWifi() {
     
     weatherIntervalCounter = -1; // force weather refresh
     lastIPAddress = WiFi.localIP();
-    WiFi.SSID().toCharArray(lastSSID, 30);
-    WiFi.psk().toCharArray(lastPassword, 64);
+    wifiManager.getWiFiSSID().toCharArray(lastSSID, 30);
+    wifiManager.getWiFiPass().toCharArray(lastPassword, 64);
     
     renderStatus(*this, "WiFi Connected!", ipBuf); 
     display.display(true); 

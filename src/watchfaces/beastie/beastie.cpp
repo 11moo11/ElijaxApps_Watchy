@@ -45,11 +45,12 @@ void drawTime(Watchy &watchy) {
     UiSDK::setCursor(watchy.display, 111, 119);
     UiSDK::fillRoundRect(watchy.display, 111, 95, 85, 29, 4, fg);
 
-    if (watchy.currentTime.Hour < 10) {
+    int hour = watchy.getDisplayHour(watchy.currentTime.Hour);
+    if (hour < 10) {
         UiSDK::print(watchy.display, "0");
     }
 
-    UiSDK::print(watchy.display, watchy.currentTime.Hour);
+    UiSDK::print(watchy.display, hour);
     UiSDK::print(watchy.display, ":");
 
     if (watchy.currentTime.Minute < 10) {

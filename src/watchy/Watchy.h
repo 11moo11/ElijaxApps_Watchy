@@ -7,6 +7,7 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 #include <Arduino_JSON.h>
+#include <Preferences.h>
 #include <Wire.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
 #include "BLE.h"
@@ -22,7 +23,8 @@
 // If DARKMODE is defined elsewhere (e.g. by a specific watchface), we
 // respect that value for the initial boot, but runtime theme is controlled
 // by the global variable gDarkMode.
-extern bool gDarkMode;
+extern RTC_DATA_ATTR bool gDarkMode;
+extern RTC_DATA_ATTR bool gUse24Hour;
 
 #define THEME_BG (gDarkMode ? GxEPD_BLACK : GxEPD_WHITE)
 #define THEME_FG (gDarkMode ? GxEPD_WHITE : GxEPD_BLACK)
@@ -94,6 +96,7 @@ public:
   void init(String datetime = "");
   void deepSleep();
   float getBatteryVoltage();
+  int getDisplayHour(int hour);
   uint8_t getBoardRevision();
 
   void vibMotor(uint8_t intervalMs = 100, uint8_t length = 20);
@@ -153,6 +156,10 @@ public:
   void showAlarm();
   void showTimer();
   void showSetTime();
+  void showTimeFormatSetup();
+  void showTimezoneSetup();
+  void loadNVSConfig();
+  void saveNVSConfig();
   void setupWifi();
   bool connectWiFi();
   weatherData getWeatherData();
